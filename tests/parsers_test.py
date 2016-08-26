@@ -18,31 +18,19 @@ class PageParserTest(unittest.TestCase):
 		"""
 		
 		page_parser = PageParser()
-		result = page_parser.parse_page_get_links(html_doc)
+		links, assets = page_parser.parse_page_get_links(html_doc)
 		
-		expected_links = ["http://example.com/elsie", "http://example.com/lacie", "http://example.com/tillie",
-		                  "assets/vids/bg-video.mp4", "assets/images/screenshots/rewards.png",
-		                  "https://www.google-analytics.com/analytics.js"]
+		expected_links = ["http://example.com/elsie", "http://example.com/lacie", "http://example.com/tillie"]
 		
-		self.assertIsNotNone(result)
-		self.assertEquals(len(result), len(expected_links))
-		self.assertEqual(set(result) == set(expected_links), True)
+		expected_assets = ["assets/vids/bg-video.mp4", "assets/images/screenshots/rewards.png",
+		                   "https://www.google-analytics.com/analytics.js"]
 		
-	def test_get_links_nothing(self):
-		html_doc = """
-		<html><head><title>The Dormouse's story</title></head>
-		<body>
-		<div></div>
-		</body>
-		"""
-		page_parser = PageParser()
-		result = page_parser.parse_page_get_links(html_doc)
-		
-		expected_links = []
-		
-		self.assertIsNotNone(result)
-		self.assertEquals(len(result), len(expected_links))
-		self.assertEqual(set(result) == set(expected_links), True)
+		self.assertIsNotNone(links)
+		self.assertIsNotNone(assets)
+		self.assertEquals(len(links), len(expected_links))
+		self.assertEquals(len(assets), len(expected_assets))
+		self.assertEqual(set(links) == set(expected_links), True)
+		self.assertEqual(set(assets) == set(expected_assets), True)
 		
 if __name__ == '__main__':
 	unittest.main()

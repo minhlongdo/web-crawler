@@ -9,14 +9,14 @@ class PageParser:
 			raise ValueError("html is not specified")
 		
 		soup = BeautifulSoup(html_doc, 'html.parser')
-		return set(link.get('href') or link.get('src') or link.get('rel') for link in soup.find_all({'a', 'link', 'img', 'script', 'source'})
-		           if link.get('href') is not None or link.get('src') is not None or link.get('rel'))
-	
-	@staticmethod
-	def parse_page_get_assets(html_doc):
-		if html_doc is None:
-			raise ValueError("html is not specified")
+		links = set()
+		assets = set()
 		
-		soup = BeautifulSoup(html_doc, 'html.parser')
-		return set(asset.get('href') or asset.get('src') for asset in soup.find_all({'a', 'link', 'img', 'script'})
-		           if asset.get('href') is not None or asset.get('src') is not None)
+		for link in soup.find_all({'a', 'link', 'img', 'script', 'source'}):
+			if link.name == 'a':
+				links.add(link.get('href'))
+			else:
+				url = link.get('src') or link.get('href')
+				assets.add(url)
+		
+		return links, assets
