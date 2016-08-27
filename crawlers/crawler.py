@@ -53,6 +53,21 @@ class WebCrawler(Crawler):
         else:
             raise ValueError("Network location and path are both empty, something is wrong here")
     
+    def fetch_content(self, url):
+        try:
+            resp = requests.get(url)
+            
+            if resp.status_code != 200:
+                module_logger.warn("Unable to access url=%s, response content=%s" % (url, resp))
+            
+            return resp
+
+        except ConnectionError as err:
+            module_logger.warn("Issues connecting to url=%s" % url, err)
+        
+        except Exception as err:
+            module_logger.warn("Something unexpected happened", err)
+    
     def crawl(self, start_url=None):
         if self.start_url is None and start_url is None:
             raise ValueError("Start url cannot be None")
@@ -60,12 +75,16 @@ class WebCrawler(Crawler):
         if start_url is not None:
             self.start_url = start_url
         
+        site_map = dict()
         visited = set()
+        links_with_issues = set()
         queue = LifoQueue()
         queue.put(self.start_url)
         
+        print("Crawling start")
+        
         while not queue.empty():
-            tries = 0
+            print("Current queue size=%i" % queue.qsize())
             next_link = queue.get()
             
             module_logger.info("Retrieved url=%s from queue" % next_link)
@@ -86,27 +105,56 @@ class WebCrawler(Crawler):
                     
             except ValueError as err:
                 module_logger.warn(err)
+                links_with_issues.add(next_link)
+                continue
+            
+            except Exception as err:
+                module_logger.error("An unexpected error during the link construction of url=%s" % next_link, err)
+                links_with_issues.add(next_link)
                 continue
             
             if access_link is None:
-                raise ValueError("Access link cannot be None,"
-                                 "something went wrong in the reconstruct_link access_link=%s" % access_link)
+                module_logger.warn("Currently working on next_link=%s - But access link value is None,"
+                                   "Something went wrong during the link construction" % next_link)
+                links_with_issues.add(next_link)
+                continue
             
-            resp = requests.get(access_link)
+            try:
+                resp = self.fetch_content(access_link)
             
-            if resp.status_code != 200:
-                module_logger.warn("Unable to access url=%s, response content=%s" % (access_link, resp))
-                while tries < 3:
-                    tries += 1
-                    resp = requests.get(access_link)
-                    if resp.status_code == 200:
-                        module_logger.info("Able to connect to url=%s after %i retries" % (access_link, tries))
-                        break
+            except ValueError as err:
+                module_logger.warn("Link=%s has a value issue, value current is %s" % (access_link, resp), err)
+                continue
             
-            if resp.status_code != 200:
-                module_logger.warn("Failed to access url=%s" % access_link)
+            except Exception as err:
+                module_logger.warn("Something unexpected happened while fetching content of the url=%s"
+                                   % access_link, err)
+                continue
+            
+            if resp is None:
+                module_logger.warn("Unable to get content from link=%s" % access_link)
                 continue
             
             links, assets = PageParser.parse_page_get_links(resp.text)
             
+            module_logger.debug("Add link=%s into already visited list" % next_link)
+            
+            visited.add(next_link)
+            
             module_logger.info("Extracted from url=%s - links=%s assets=%s" % (access_link, links, assets))
+            
+            for link in links:
+                if link not in visited:
+                    queue.put(link)
+                
+            module_logger.debug("Current link queue=%s" % str(queue))
+            site_map_record = {next_link: {'links': links, 'assets': assets}}
+            
+            module_logger.info("Adding record into site map=%s" % site_map_record)
+            
+            site_map.update(site_map_record)
+        
+        module_logger.info("Crawling completed.")
+        print("Crawling completed")
+        
+        return start_url, site_map, links_with_issues
