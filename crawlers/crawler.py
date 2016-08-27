@@ -22,18 +22,10 @@ ch.setFormatter(formatter)
 module_logger.addHandler(fh)
 module_logger.addHandler(ch)
 
-
-class Crawler:
+    
+class WebCrawler:
     def __init__(self, start_url=None):
         self.start_url = start_url
-        
-    def crawl(self, start_url=None):
-        raise NotImplementedError
-
-    
-class WebCrawler(Crawler):
-    def __init__(self, start_url=None):
-        super().__init__(start_url)
     
     def reconstruct_link(self, link):
         if link is None:
