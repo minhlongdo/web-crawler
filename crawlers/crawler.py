@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging, requests
+import logging
+import requests
 from queue import LifoQueue
 from urllib.parse import urlparse
 from parsers.parsers import PageParser
