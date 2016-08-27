@@ -158,4 +158,7 @@ class WebCrawler(Crawler):
         module_logger.info("Crawling completed.")
         print("Crawling completed")
         
+        module_logger.info("SiteMap=%s" % site_map)
+        module_logger.info("Links with issues=%s" % links_with_issues)
+        
         return start_url, site_map, links_with_issues
