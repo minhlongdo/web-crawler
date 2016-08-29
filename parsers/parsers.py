@@ -18,5 +18,8 @@ class PageParser:
 			else:
 				url = link.get('src') or link.get('href')
 				assets.add(url)
-		
-		return links, assets
+
+		links__without_none = set(link for link in links if link is not None)
+		assets_without_none = set(asset for asset in assets if asset is not None)
+
+		return links__without_none, assets_without_none
