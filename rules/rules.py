@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
-from urllib3.util import parse_url
 from tldextract import extract
 
 
-class CrawlSameDomainRule:
-	
-	@staticmethod
-	def same_domain(domain_url, url):
-		search_domain = extract(domain_url).domain
-		url_domain = extract(url).domain
-		return search_domain == url_domain
+# TODO: Need to test for throwing ValueError exception when either domain_url or target_url is None - 2 test cases
+class DomainRule:
+    @staticmethod
+    def apply(domain_url, target_url):
+        if domain_url is None or target_url is None:
+            raise ValueError("Domain=%s and target URL=%s" % (domain_url, target_url))
+
+        search_domain = extract(domain_url).domain
+        url_domain = extract(target_url).domain
+
+        return search_domain == url_domain
