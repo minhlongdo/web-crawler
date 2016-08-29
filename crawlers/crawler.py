@@ -117,11 +117,13 @@ class WebCrawler:
             
             except ValueError as err:
                 module_logger.warn("Link=%s has a value issue, value current is %s" % (access_link, resp), err)
+                module_logger.exception(err)
                 continue
             
             except Exception as err:
                 module_logger.warn("Something unexpected happened while fetching content of the url=%s"
-                                   % access_link, err)
+                                   % access_link)
+                module_logger.exception(err)
                 continue
             
             if resp is None:
