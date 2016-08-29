@@ -2,3 +2,5 @@ urllib3==1.16
 requests==2.11.1
 beautifulsoup4==4.5.1
 validators==0.10.3
+pyhamcrest==1.9.0
+tldextract==2.0.1
