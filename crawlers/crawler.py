@@ -4,7 +4,7 @@ import requests
 from queue import LifoQueue
 from urllib.parse import urlparse
 from parsers.parsers import PageParser
-from rules.rules import DomainRule
+from rules.rules import DomainRule, FileExtensionRule
 
 module_logger = logging.getLogger('WebCrawler')
 module_logger.setLevel(logging.DEBUG)
@@ -81,6 +81,14 @@ class WebCrawler:
             next_link = queue.get()
             
             module_logger.info("Retrieved url=%s from queue" % next_link)
+
+            try:
+                if FileExtensionRule.apply(next_link):
+                    module_logger.info("Url=%s is a file asset" % next_link)
+                    continue
+
+            except ValueError as err:
+                module_logger.warn(err)
 
             try:
                 access_link = self.reconstruct_link(next_link)
