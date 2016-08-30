@@ -5,6 +5,7 @@ from queue import LifoQueue
 from urllib.parse import urlparse
 from parsers.parsers import PageParser
 from rules.rules import DomainRule, FileExtensionRule
+from handlers.http_handler import HttpHandler
 
 module_logger = logging.getLogger('WebCrawler')
 module_logger.setLevel(logging.DEBUG)
@@ -45,21 +46,6 @@ class WebCrawler:
         
         else:
             raise ValueError("Network location and path are both empty, something is wrong here")
-    
-    def fetch_content(self, url):
-        try:
-            resp = requests.get(url)
-            
-            if resp.status_code != 200:
-                module_logger.warn("Unable to access url=%s, response content=%s" % (url, resp))
-            
-            return resp
-
-        except ConnectionError as err:
-            module_logger.warn("Issues connecting to url=%s" % url, err)
-        
-        except Exception as err:
-            module_logger.warn("Something unexpected happened", err)
     
     def crawl(self, start_url=None):
         if self.start_url is None and start_url is None:
@@ -121,7 +107,7 @@ class WebCrawler:
                 continue
             
             try:
-                resp = self.fetch_content(access_link)
+                resp = HttpHandler.fetch_url_content(access_link)
 
                 if resp is None:
                     module_logger.warn("Unable to get content from link=%s" % access_link)
