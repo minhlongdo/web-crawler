@@ -25,6 +25,13 @@ module_logger.addHandler(ch)
 class DomainRule:
     @staticmethod
     def apply(domain_url, target_url):
+        """
+        Check if the url belongs to the same domain.
+
+        :param domain_url: Domain that the url is supposed to be validated against.
+        :param target_url: Url that needs to be validated against the domain url.
+        :return: True | False
+        """
         if domain_url is None or target_url is None:
             raise ValueError("Domain=%s and target URL=%s" % (domain_url, target_url))
 
@@ -38,6 +45,13 @@ class DomainRule:
 class FileExtensionRule:
     @staticmethod
     def apply(url):
+        """
+        Only return True for .html extensions as they are possible links.
+        Everything else such as .zip will return False
+
+        :param url: source link for asset
+        :return: True | False
+        """
         if url is None:
             raise ValueError("Url=%s" % url)
 
