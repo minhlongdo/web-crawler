@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from parsers.parsers import PageParser
 from rules.rules import DomainRule, FileExtensionRule
 from handlers.http_handler import HttpHandler
+from handlers.link_handler import LinkHandler
 
 module_logger = logging.getLogger('WebCrawler')
 module_logger.setLevel(logging.DEBUG)
@@ -27,25 +28,6 @@ module_logger.addHandler(ch)
 class WebCrawler:
     def __init__(self, start_url=None):
         self.start_url = start_url
-    
-    def reconstruct_link(self, link):
-        if link is None:
-            raise ValueError("Link cannot be None")
-        
-        url_parsed = urlparse(link)
-        
-        if url_parsed is None:
-            raise ValueError("Something went wrong during the url parsing")
-        
-        if url_parsed.scheme == 'http' or url_parsed.scheme == 'https':
-            module_logger.debug("Uses the http scheme, it is not a relative path.")
-            return link
-        
-        elif url_parsed.scheme == '':
-            return self.start_url + url_parsed.path
-        
-        else:
-            raise ValueError("Network location and path are both empty, something is wrong here")
     
     def crawl(self, start_url=None):
         if self.start_url is None and start_url is None:
@@ -77,7 +59,7 @@ class WebCrawler:
                 module_logger.warn(err)
 
             try:
-                access_link = self.reconstruct_link(next_link)
+                access_link = LinkHandler.reconstruct_link(self.start_url, next_link)
 
                 if access_link is None:
                     module_logger.warn("Currently working on next_link=%s - But access link value is None,"
