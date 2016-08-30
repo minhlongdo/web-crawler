@@ -1,12 +1,63 @@
 # -*- coding: utf-8 -*-
-from urllib3.util import parse_url
 from tldextract import extract
+from urllib.parse import urlparse
+
+from os.path import splitext
+import logging
+
+module_logger = logging.getLogger('Rules')
+module_logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+
+fh = logging.FileHandler('rules.log')
+
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+
+module_logger.addHandler(fh)
+module_logger.addHandler(ch)
+
+# TODO: Need to test for throwing ValueError exception when either domain_url or target_url is None - 2 test cases
+class DomainRule:
+    @staticmethod
+    def apply(domain_url, target_url):
+        if domain_url is None or target_url is None:
+            raise ValueError("Domain=%s and target URL=%s" % (domain_url, target_url))
+
+        search_domain = extract(domain_url).domain
+        url_domain = extract(target_url).domain
+
+        return search_domain == url_domain
 
 
-class CrawlSameDomainRule:
-	
-	@staticmethod
-	def same_domain(domain_url, url):
-		search_domain = extract(domain_url).domain
-		url_domain = extract(url).domain
-		return search_domain == url_domain
+# TODO need to test None for input to throw ValueError - 1 test case
+class FileExtensionRule:
+    @staticmethod
+    def apply(url):
+        if url is None:
+            raise ValueError("Url=%s" % url)
+
+        parsed_url = urlparse(url)
+
+        if parsed_url is None:
+            raise ValueError("Parsed url=%s" % parsed_url)
+
+        scheme = parsed_url.scheme
+
+        # Condition for a relative path to be an asset - E.g. compressed file
+        if scheme is None or scheme == '':
+            filename, file_ext = splitext(url)
+            if file_ext is None or file_ext == '' or file_ext == '.html':
+                module_logger.debug("Url=%s is not a file asset" % url)
+                return False
+
+            else:
+                module_logger.debug("Url=%s is a file asset" % url)
+                return True
+        else:
+            module_logger.debug("Scheme=%s Url=%s is not a file asset" % (scheme, url))
+            return False

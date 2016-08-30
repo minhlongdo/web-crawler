@@ -4,7 +4,7 @@ import requests
 from queue import LifoQueue
 from urllib.parse import urlparse
 from parsers.parsers import PageParser
-from rules.rules import CrawlSameDomainRule
+from rules.rules import DomainRule, FileExtensionRule
 
 module_logger = logging.getLogger('WebCrawler')
 module_logger.setLevel(logging.DEBUG)
@@ -81,18 +81,32 @@ class WebCrawler:
             next_link = queue.get()
             
             module_logger.info("Retrieved url=%s from queue" % next_link)
-            
+
+            try:
+                if FileExtensionRule.apply(next_link):
+                    module_logger.info("Url=%s is a file asset" % next_link)
+                    continue
+
+            except ValueError as err:
+                module_logger.warn(err)
+
             try:
                 access_link = self.reconstruct_link(next_link)
-                
-                if not CrawlSameDomainRule.same_domain(self.start_url, access_link):
-                    module_logger.info("url=%s is not in the same domain as %s" % (access_link, self.start_url))
+
+                if access_link is None:
+                    module_logger.warn("Currently working on next_link=%s - But access link value is None,"
+                                       "Something went wrong during the link construction" % next_link)
+                    links_with_issues.add(next_link)
                     continue
-                    
+
                 elif access_link in visited:
                     module_logger.info("Already visited url=%s, skipping" % access_link)
                     continue
-                
+
+                elif not DomainRule.apply(self.start_url, access_link):
+                    module_logger.info("url=%s is not in the same domain as %s" % (access_link, self.start_url))
+                    continue
+
                 else:
                     module_logger.info("Going to access url=%s constructed from %s" % (access_link, next_link))
                     
@@ -106,14 +120,12 @@ class WebCrawler:
                 links_with_issues.add(next_link)
                 continue
             
-            if access_link is None:
-                module_logger.warn("Currently working on next_link=%s - But access link value is None,"
-                                   "Something went wrong during the link construction" % next_link)
-                links_with_issues.add(next_link)
-                continue
-            
             try:
                 resp = self.fetch_content(access_link)
+
+                if resp is None:
+                    module_logger.warn("Unable to get content from link=%s" % access_link)
+                    continue
             
             except ValueError as err:
                 module_logger.warn("Link=%s has a value issue, value current is %s" % (access_link, resp), err)
@@ -124,10 +136,6 @@ class WebCrawler:
                 module_logger.warn("Something unexpected happened while fetching content of the url=%s"
                                    % access_link)
                 module_logger.exception(err)
-                continue
-            
-            if resp is None:
-                module_logger.warn("Unable to get content from link=%s" % access_link)
                 continue
             
             links, assets = PageParser.parse_page_get_links(resp.text)
@@ -155,4 +163,4 @@ class WebCrawler:
         module_logger.info("SiteMap=%s" % site_map)
         module_logger.info("Links with issues=%s" % links_with_issues)
         
-        return start_url, site_map, links_with_issues
+        return self.start_url, site_map, links_with_issues
