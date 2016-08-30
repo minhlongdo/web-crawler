@@ -87,14 +87,14 @@ class WebCrawler:
                 continue
             
             try:
-                resp = HttpHandler.fetch_url_content(access_link)
+                content = HttpHandler.fetch_url_content(access_link)
 
-                if resp is None:
+                if content is None:
                     module_logger.warn("Unable to get content from link=%s" % access_link)
                     continue
             
             except ValueError as err:
-                module_logger.warn("Link=%s has a value issue, value current is %s" % (access_link, resp), err)
+                module_logger.warn("Link=%s has a value issue, value current is %s" % (access_link, content), err)
                 module_logger.exception(err)
                 continue
             
@@ -104,7 +104,7 @@ class WebCrawler:
                 module_logger.exception(err)
                 continue
             
-            links, assets = PageParser.parse_page_get_links(resp.text)
+            links, assets = PageParser.parse_page_get_links(content)
             
             module_logger.debug("Add link=%s into already visited list" % next_link)
             
