@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-import requests
 from queue import LifoQueue
-from urllib.parse import urlparse
 from parsers.parsers import PageParser
 from rules.rules import DomainRule, FileExtensionRule
 from handlers.http_handler import HttpHandler
