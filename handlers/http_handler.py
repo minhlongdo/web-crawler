@@ -24,6 +24,12 @@ class HttpHandler:
 
     @staticmethod
     def fetch_url_content(url):
+        """
+        Fetches content from url through a GET request.
+
+        :param url: A valid url
+        :return: content
+        """
         if url is None or url == '':
             raise ValueError("Url=%s" % url)
 
@@ -33,10 +39,16 @@ class HttpHandler:
             if resp.status_code != 200:
                 module_logger.warn("Unable to access url=%s, response=%s" % (url, resp))
 
-            return resp
+            if resp is None:
+                module_logger.warn("response content=%s for url=%s" % (resp, url))
+                raise ValueError("response content=%s for url=%s" % (resp, url))
+
+            return resp.text
 
         except ConnectionError as err:
             module_logger.warn(err)
+            raise ConnectionError(err)
 
         except Exception as err:
             module_logger.warn(err)
+            raise Exception(err)
