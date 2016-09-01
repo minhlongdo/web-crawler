@@ -1,4 +1,6 @@
 # -*- coding utf-8 -*-
+from logging.handlers import RotatingFileHandler
+
 import logging
 import requests
 
@@ -10,7 +12,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 
-fh = logging.FileHandler('http-handler.log')
+fh = RotatingFileHandler('http-handler.log', maxBytes=100000, backupCount=5)
 
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
@@ -19,7 +21,6 @@ module_logger.addHandler(fh)
 module_logger.addHandler(ch)
 
 
-# TODO: Need to mock request responses
 class HttpHandler:
 
     @staticmethod

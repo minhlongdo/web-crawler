@@ -3,6 +3,7 @@ from tldextract import extract
 from urllib.parse import urlparse
 
 from os.path import splitext
+from logging.handlers import RotatingFileHandler
 import logging
 
 module_logger = logging.getLogger('Rules')
@@ -13,7 +14,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 
-fh = logging.FileHandler('rules.log')
+fh = RotatingFileHandler('rules.log', maxBytes=100000, backupCount=5)
 
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
@@ -21,7 +22,7 @@ ch.setFormatter(formatter)
 module_logger.addHandler(fh)
 module_logger.addHandler(ch)
 
-# TODO: Need to test for throwing ValueError exception when either domain_url or target_url is None - 2 test cases
+
 class DomainRule:
     @staticmethod
     def apply(domain_url, target_url):
@@ -41,7 +42,6 @@ class DomainRule:
         return search_domain == url_domain
 
 
-# TODO need to test None for input to throw ValueError - 1 test case
 class FileExtensionRule:
     @staticmethod
     def apply(url):
