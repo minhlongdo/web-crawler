@@ -11,15 +11,16 @@ class PageParser:
 		soup = BeautifulSoup(html_doc, 'html.parser')
 		links = set()
 		assets = set()
-		
+
+		# Get links and assets
 		for link in soup.find_all({'a', 'link', 'img', 'script', 'source'}):
 			if link.name == 'a':
-				links.add(link.get('href'))
+				link = link.get('href')
+				if link is not None:
+					links.add(link)
 			else:
 				url = link.get('src') or link.get('href')
-				assets.add(url)
+				if url is not None:
+					assets.add(url)
 
-		links__without_none = set(link for link in links if link is not None)
-		assets_without_none = set(asset for asset in assets if asset is not None)
-
-		return links__without_none, assets_without_none
+		return links, assets
