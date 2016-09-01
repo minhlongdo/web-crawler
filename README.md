@@ -38,7 +38,6 @@ http://yoyowallet.com/assets/images/logo.svg
 http://yoyowallet.com/assets/js/bootstrap.js
 http://yoyowallet.com/assets/js/classie.js
 http://yoyowallet.com/assets/js/full-screen.js
-... etc
 
 # How to run unittests
 Run 'python3 -m unittest discover -p "*_tests.py"' for running all unittests.
