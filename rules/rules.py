@@ -21,7 +21,7 @@ ch.setFormatter(formatter)
 module_logger.addHandler(fh)
 module_logger.addHandler(ch)
 
-# TODO: Need to test for throwing ValueError exception when either domain_url or target_url is None - 2 test cases
+
 class DomainRule:
     @staticmethod
     def apply(domain_url, target_url):
@@ -41,7 +41,6 @@ class DomainRule:
         return search_domain == url_domain
 
 
-# TODO need to test None for input to throw ValueError - 1 test case
 class FileExtensionRule:
     @staticmethod
     def apply(url):
