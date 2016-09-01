@@ -3,6 +3,7 @@ from tldextract import extract
 from urllib.parse import urlparse
 
 from os.path import splitext
+from logging.handlers import RotatingFileHandler
 import logging
 
 module_logger = logging.getLogger('Rules')
@@ -13,7 +14,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 
-fh = logging.FileHandler('rules.log')
+fh = RotatingFileHandler('rules.log', maxBytes=100000, backupCount=5)
 
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)

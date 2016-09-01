@@ -1,5 +1,6 @@
 # -*- coding utf-8 -*-
 from urllib.parse import urlparse
+from logging.handlers import RotatingFileHandler
 
 import logging
 
@@ -11,7 +12,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 
-fh = logging.FileHandler('link-handler.log')
+fh = RotatingFileHandler('link-handler.log', maxBytes=100000, backupCount=5)
 
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from logging.handlers import RotatingFileHandler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import LifoQueue
 from parsers.parsers import PageParser
@@ -15,7 +16,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 
-fh = logging.FileHandler('web-crawler.log')
+fh = RotatingFileHandler('web-crawler.log', maxBytes=100000, backupCount=5)
 
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
@@ -63,6 +64,7 @@ class WebCrawler:
                     visited.add(url)
 
                     jobs -= 1
+                    module_logger.info("Remaining jobs=%i" % jobs)
 
                     if future.exception() is not None:
                         module_logger.warn('%r generated an exception: %s' % (url,
