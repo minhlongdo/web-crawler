@@ -19,7 +19,6 @@ module_logger.addHandler(fh)
 module_logger.addHandler(ch)
 
 
-# TODO: Need to mock request responses
 class HttpHandler:
 
     @staticmethod
