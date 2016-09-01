@@ -65,28 +65,6 @@ def n_thread_pool_web_Crawler(n):
 	except Exception as err:
 		print(err)
 
-def compare_keys(result1, result2):
-	if len(result1.keys()) == len(result2.keys()):
-		print("Number of keys are the same")
-	else:
-		print("Different number of keys")
-
-	result1_set = set()
-	for key in result1.keys():
-		result1_set.add(key)
-
-	result2_set = set()
-	for key in result2.keys():
-		result2_set.add(key)
-
-	diff1 = result1_set.difference(result2_set)
-	print("Number of differences=%i" % len(diff1))
-	print("Differences: %s" % diff1)
-
-	diff2 = result2_set.difference(result1_set)
-	print("Number of differences=%i" % len(diff2))
-	print("Differences: %s" % diff2)
-
 if __name__ == '__main__':
 	start_url = 'http://yoyowallet.com/'
 	web_crawler = WebCrawler(start_url=start_url)
@@ -96,13 +74,7 @@ if __name__ == '__main__':
 	#single_thread_pool_result = single_thread_pool_web_crawler()
 	two_threaded_pool_result = two_threaded_pool_web_crawler()
 	ten_threaded_pool_result = n_thread_pool_web_Crawler(10)
-	#twenty_threaded_pool_result = n_thread_pool_web_Crawler(20)
-
-	#print(len(single_threaded_result))
-	#print(len(single_thread_pool_result))
-	print(len(two_threaded_pool_result))
-	print(len(ten_threaded_pool_result))
-	#print(len(twenty_threaded_pool_result))
+	twenty_threaded_pool_result = n_thread_pool_web_Crawler(20)
 
 	#pp.pprint(single_threaded_result)
 	#print(len(single_threaded_result))
@@ -111,5 +83,3 @@ if __name__ == '__main__':
 	#pp.pprint(two_threaded_pool_result)
 	#pp.pprint(ten_threaded_pool_result)
 	#pp.pprint(twenty_threaded_pool_result)
-
-	#compare_keys(single_threaded_result, single_thread_pool_result)
