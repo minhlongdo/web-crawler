@@ -67,6 +67,22 @@ def compare_keys(result1, result2):
 	else:
 		print("Different number of keys")
 
+	result1_set = set()
+	for key in result1.keys():
+		result1_set.add(key)
+
+	result2_set = set()
+	for key in result2.keys():
+		result2_set.add(key)
+
+	diff1 = result1_set.difference(result2_set)
+	print("Number of differences=%i" % len(diff1))
+	print("Differences: %s" % diff1)
+
+	diff2 = result2_set.difference(result1_set)
+	print("Number of differences=%i" % len(diff2))
+	print("Differences: %s" % diff2)
+
 if __name__ == '__main__':
 	start_url = 'http://yoyowallet.com/'
 	web_crawler = WebCrawler(start_url=start_url)
@@ -85,9 +101,11 @@ if __name__ == '__main__':
 	#print(len(twenty_threaded_pool_result))
 
 	#pp.pprint(single_threaded_result)
-	pp.pprint(single_thread_pool_result)
+	#print(len(single_threaded_result))
+	##pp.pprint(single_thread_pool_result)
 	print(len(single_thread_pool_result))
 	#pp.pprint(two_threaded_pool_result)
 	#pp.pprint(ten_threaded_pool_result)
 	#pp.pprint(twenty_threaded_pool_result)
 
+	#compare_keys(single_threaded_result, single_thread_pool_result)

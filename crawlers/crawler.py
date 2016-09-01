@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from queue import Queue, LifoQueue
+from queue import LifoQueue
 from parsers.parsers import PageParser
 from rules.rules import DomainRule, FileExtensionRule
 from handlers.http_handler import HttpHandler
@@ -30,7 +30,9 @@ class WebCrawler:
 
     def start_crawl(self, workers=1):
         """
-        Start webcrawler workers using threads
+        Start webcrawler workers using threads.
+        Url are submitted to a threadpoolexecutor, results are being actively polled.
+        Returned results are processed and mapped accordingly.
         :param num_thread: Number of workers to run
         :return: dict()
         """
@@ -39,26 +41,26 @@ class WebCrawler:
         links_with_issues = set()
         queue = set()
 
-        queue.add(self.start_url)
-
         if not self.start_url:
             raise ValueError("Invalid starting url value, starting_url=%s" % self.start_url)
 
         if workers < 1:
             raise ValueError("The number of workers need to be at least 1.")
 
+        queue.add(self.start_url)
         jobs = 0
 
         with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_to_url = dict()
             while len(queue) > 0 or jobs > 0:
-                future_to_url = dict((executor.submit(self.crawl_worker, url), url) for url in queue)
-                jobs += len(future_to_url)
-                queue.clear()
+                while len(queue) > 0:
+                    url = queue.pop()
+                    future_to_url[executor.submit(self.crawl_worker, url)] = url
+                    jobs += 1
+                print("Remaining jobs=%i" % jobs)
 
                 for future in as_completed(future_to_url):
                     url = future_to_url[future]
-
-                    #queue.remove(url)
                     visited.add(url)
 
                     jobs -= 1
@@ -76,10 +78,11 @@ class WebCrawler:
                             try:
                                 links = site_map_entry[url]['links']
 
+                                # Add links that were retrieved from the url to the queue
+                                # Conditions: must not be 'None' or in visited or valid based on the FileExtensionRule
                                 next_url_batch = [link for link in links
                                                   if link is not None
                                                   and link not in visited
-                                                  and DomainRule.apply(self.start_url, link)
                                                   and not FileExtensionRule.apply(link)]
 
                                 for next_url in next_url_batch:
@@ -94,9 +97,13 @@ class WebCrawler:
                             except Exception as err:
                                 module_logger.warn(err)
 
+                        # Record links that had issues
                         if links_with_issues_entry is not None:
                             for link in links_with_issues_entry:
                                 links_with_issues.add(link)
+
+                # Resizing future dictionary - cleaning up after the result has been processed
+                future_to_url = { k:v for k,v in future_to_url.items() if v not in visited }
 
         return self.start_url, site_map, links_with_issues
 
@@ -120,15 +127,14 @@ class WebCrawler:
                 module_logger.debug("Start url=%s site_map_entry=%s links_with_issues_entry=%s" % (self.start_url,
                                                                                                    site_map_entry,
                                                                                                    links_with_issues_entry))
-                site_map_entry[url] = {'links': set(), 'assets': set()}
-                return self.start_url, site_map_entry, links_with_issues_entry
+                return self.start_url, None, links_with_issues_entry
 
             module_logger.debug("Going to open access_link=%s" % access_link)
 
         except Exception as err:
             module_logger.warn(err)
             site_map_entry[url] = {'links': set(), 'assets': set()}
-            return self.start_url, site_map_entry, links_with_issues_entry
+            return self.start_url, None, links_with_issues_entry
 
 
         try:
@@ -139,13 +145,11 @@ class WebCrawler:
 
         except ValueError as err:
             module_logger.warn(err)
-            site_map_entry[url] = {'links': set(), 'assets': set()}
-            return self.start_url, site_map_entry, links_with_issues_entry
+            return self.start_url, None, links_with_issues_entry
 
         except Exception as err:
             module_logger.warn(err)
-            site_map_entry[url] = {'links': set(), 'assets': set()}
-            return self.start_url, site_map_entry, links_with_issues_entry
+            return self.start_url, None, links_with_issues_entry
 
         links, assets = PageParser.parse_page_get_links(content)
 
