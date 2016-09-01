@@ -57,7 +57,6 @@ class WebCrawler:
                     url = queue.pop()
                     future_to_url[executor.submit(self.crawl_worker, url)] = url
                     jobs += 1
-                print("Remaining jobs=%i" % jobs)
 
                 for future in as_completed(future_to_url):
                     url = future_to_url[future]
