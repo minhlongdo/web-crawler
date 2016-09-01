@@ -32,9 +32,9 @@ class WebCrawler:
         """
         Start webcrawler workers using threads.
         Url are submitted to a threadpoolexecutor, results are being actively polled.
-        Returned results are processed and mapped accordingly.
+        Returned results are saved in 'site_map' while putting new links that were found in the url into the queue.
         :param num_thread: Number of workers to run
-        :return: dict()
+        :return: self.start_url - set(), site_map - dict(), links_with_issues - set()
         """
         site_map = {}
         visited = set()
@@ -108,6 +108,11 @@ class WebCrawler:
         return self.start_url, site_map, links_with_issues
 
     def crawl_worker(self, url):
+        """
+        This is the task that is being executed by the threadpool executor when it receive a url to do it's job
+        :param url:
+        :return:
+        """
         if url is None:
             raise ValueError("Url=%s has a None value" % url)
 
@@ -117,6 +122,7 @@ class WebCrawler:
         module_logger.info("Working on url=%s" % url)
 
         try:
+            # Make a relative url into an absolute url
             access_link = LinkHandler.reconstruct_link(self.start_url, url)
 
             if access_link is None:
