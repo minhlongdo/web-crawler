@@ -195,6 +195,7 @@ class WebCrawler:
                 module_logger.warn(err)
 
             try:
+                # Create an absolute url from a relative url
                 access_link = LinkHandler.reconstruct_link(self.start_url, next_link)
 
                 if access_link is None:
@@ -242,6 +243,7 @@ class WebCrawler:
                 module_logger.exception(err)
                 continue
 
+            # Get links and assets from HTML page
             links, assets = PageParser.parse_page_get_links(content)
 
             module_logger.debug("Add link=%s into already visited list" % next_link)
