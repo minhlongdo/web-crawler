@@ -69,7 +69,7 @@ class WebCrawler:
                         module_logger.warn('%r generated an exception: %s' % (url,
                                                                               future.exception()))
                     else:
-                        start_url, site_map_entry, links_with_issues_entry = future.result()
+                        site_map_entry, links_with_issues_entry = future.result()
                         module_logger.info("Visited=%s linksWithIssues=%s Sitemap=%s" % (visited, links_with_issues, site_map))
 
                         if site_map_entry is not None:
@@ -105,13 +105,13 @@ class WebCrawler:
                 # Resizing future dictionary - cleaning up after the result has been processed
                 future_to_url = { k:v for k,v in future_to_url.items() if v not in visited }
 
-        return self.start_url, site_map, links_with_issues
+        return site_map, links_with_issues
 
     def crawl_worker(self, url):
         """
         This is the task that is being executed by the threadpool executor when it receive a url to do it's job
-        :param url:
-        :return:
+        :param url: Url that is supposed to be getting links and assets from
+        :return: site_map_entry - dict(), links_with_issues_entry - set()
         """
         if url is None:
             raise ValueError("Url=%s has a None value" % url)
@@ -133,14 +133,14 @@ class WebCrawler:
                 module_logger.debug("Start url=%s site_map_entry=%s links_with_issues_entry=%s" % (self.start_url,
                                                                                                    site_map_entry,
                                                                                                    links_with_issues_entry))
-                return self.start_url, None, links_with_issues_entry
+                return None, links_with_issues_entry
 
             module_logger.debug("Going to open access_link=%s" % access_link)
 
         except Exception as err:
             module_logger.warn(err)
             site_map_entry[url] = {'links': set(), 'assets': set()}
-            return self.start_url, None, links_with_issues_entry
+            return None, links_with_issues_entry
 
 
         try:
@@ -151,11 +151,11 @@ class WebCrawler:
 
         except ValueError as err:
             module_logger.warn(err)
-            return self.start_url, None, links_with_issues_entry
+            return None, links_with_issues_entry
 
         except Exception as err:
             module_logger.warn(err)
-            return self.start_url, None, links_with_issues_entry
+            return None, links_with_issues_entry
 
         links, assets = PageParser.parse_page_get_links(content)
 
@@ -166,7 +166,7 @@ class WebCrawler:
         module_logger.info("SiteMap=%s" % site_map_entry)
         module_logger.info("Links with issues=%s" % links)
 
-        return self.start_url, site_map_entry, links_with_issues_entry
+        return site_map_entry, links_with_issues_entry
 
 
     def crawl(self, start_url=None):
